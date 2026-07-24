@@ -71,7 +71,7 @@ st.title("Gerar Folha de Ponto")
 st.subheader("1. Planilha de colaboradores (.xlsx)")
 xlsx_file = st.file_uploader("Envie a planilha base", type=["xlsx"])
 
-st.subheader("2. Template Word (.docx)")
+st.subheader("2. Base Word (.docx)")
 docx_file = st.file_uploader(
     "Envie a planilha base",
     type=["docx"],
