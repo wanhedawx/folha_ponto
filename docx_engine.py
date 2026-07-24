@@ -133,17 +133,30 @@ def _replace_period_row(content: str, start_date: date, end_date: date) -> str:
     return content[:tr_start] + new_row + content[tr_end:]
 
 
-def fill_merge_fields(content: str, values: dict) -> str:
+def fill_merge_fields(content: str, values: dict):
+
+    # Substitui os marcadores @@CAMPO@@
+    for campo, valor in values.items():
+        content = content.replace(
+            f"@@{campo}@@",
+            _xml_escape(str(valor))
+        )
+
+    # Continua substituindo os MergeFields normais («CAMPO»)
     for field in MERGE_FIELDS:
-        value = _xml_escape(values.get(field, ''))
-        placeholder = f'«{field}»'
-        # texto em cache do campo de mala direta
+        value = _xml_escape(values.get(field, ""))
+        placeholder = f"«{field}»"
+
         pattern = re.compile(
             r'(<w:t[^>]*>)' + re.escape(placeholder) + r'(</w:t>)'
         )
-        content, n = pattern.subn(lambda m: m.group(1) + value + m.group(2), content, count=1)
-    return content
 
+        content, _ = pattern.subn(
+            lambda m: m.group(1) + value + m.group(2),
+            content
+        )
+
+    return content
 
 def set_period(content: str, start_date: date, end_date: date) -> str:
     # cabeçalho PERÍODO / ANO
