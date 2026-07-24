@@ -67,7 +67,6 @@ def try_convert_pdf(docx_bytes: bytes) -> bytes | None:
 
 
 st.title("Gerar Folha de Ponto")
-st.caption("Importa a planilha, escolhe o período, gera um .docx por colaborador e baixa tudo em ZIP.")
 
 st.subheader("1. Planilha de colaboradores (.xlsx)")
 xlsx_file = st.file_uploader("Envie a planilha base", type=["xlsx"])
