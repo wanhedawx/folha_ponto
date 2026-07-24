@@ -85,11 +85,6 @@ with col2:
     default_end = (start_date.replace(day=1) + timedelta(days=32)).replace(day=15)
     end_date = st.date_input("Data final", value=default_end)
 
-st.subheader("4. Opções")
-gerar_pdf = st.checkbox(
-    "Também converter para PDF",
-    value=False,
-)
 
 gerar = st.button("Gerar folhas de ponto", type="primary", use_container_width=True)
 
