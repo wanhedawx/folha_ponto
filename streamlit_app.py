@@ -16,7 +16,7 @@ import streamlit as st
 
 import docx_engine as eng
 
-st.set_page_config(page_title="Gerar de Folha de Ponto", layout="centered")
+st.set_page_config(page_title="Gerar Folha de Ponto", layout="centered")
 
 REQUIRED_COLUMNS = [
     "Nome (Empresa)", "DESCRIÇÃO DO LOCAL", "ENDEREÇO", "NUMERO", "CIDADE",
@@ -66,7 +66,7 @@ def try_convert_pdf(docx_bytes: bytes) -> bytes | None:
     return None
 
 
-st.title("Gerar de Folha de Ponto")
+st.title("Gerar Folha de Ponto")
 st.caption("Importa a planilha, escolhe o período, gera um .docx por colaborador e baixa tudo em ZIP.")
 
 st.subheader("1. Planilha de colaboradores (.xlsx)")
