@@ -118,21 +118,26 @@ if gerar:
     total = len(df)
 
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-        for i, row in df.iterrows():
-            values = {}
-            campos_vazios = []
-            for col, field in COLUMN_TO_FIELD.items():
-                raw = row.get(col, "")
-                if pd.isna(raw) or str(raw).strip() == "":
-                    campos_vazios.append(col)
-                    raw = ""
-                if field == "ADMISSAO" and raw != "":
-                    try:
-                        raw = pd.to_datetime(raw).strftime("%d/%m/%Y")
-                    except Exception:
-                        raw = str(raw)
-                values[field] = str(raw)
-            MESES = {
+    for i, row in df.iterrows():
+        values = {}
+        campos_vazios = []
+
+        for col, field in COLUMN_TO_FIELD.items():
+            raw = row.get(col, "")
+
+            if pd.isna(raw) or str(raw).strip() == "":
+                campos_vazios.append(col)
+                raw = ""
+
+            if field == "ADMISSAO" and raw != "":
+                try:
+                    raw = pd.to_datetime(raw).strftime("%d/%m/%Y")
+                except Exception:
+                    raw = str(raw)
+
+            values[field] = str(raw)
+
+        MESES = {
             1: "JAN",
             2: "FEV",
             3: "MAR",
@@ -144,36 +149,51 @@ if gerar:
             9: "SET",
             10: "OUT",
             11: "NOV",
-            12: "DEZ"}
-    
-            values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
-            values["ANO"] = str(end_date.year) 
+            12: "DEZ"
+        }
 
-            nome = values.get("NOME", f"colaborador_{i}").strip() or f"colaborador_{i}"
-            matricula = values.get("MATRICULA", "").strip()
+        values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
+        values["ANO"] = str(end_date.year)
 
-            if campos_vazios:
-                faltando_dados.append((nome or f"linha {i+2}", campos_vazios))
+        nome = values.get("NOME", f"colaborador_{i}").strip() or f"colaborador_{i}"
+        matricula = values.get("MATRICULA", "").strip()
 
-            try:
-                docx_bytes = eng.build_docx(base_content, others, values, start_date, end_date)
-            except Exception as e:
-                faltando_dados.append((nome, [f"ERRO ao gerar: {e}"]))
-                continue
+        if campos_vazios:
+            faltando_dados.append((nome or f"linha {i+2}", campos_vazios))
 
-            filename_base = sanitize_filename(f"{matricula} - {nome}") if matricula else sanitize_filename(nome)
-            zf.writestr(f"{filename_base}.docx", docx_bytes)
+        try:
+            docx_bytes = eng.build_docx(
+                base_content,
+                others,
+                values,
+                start_date,
+                end_date
+            )
+        except Exception as e:
+            faltando_dados.append((nome, [f"ERRO ao gerar: {e}"]))
+            continue
 
-            if gerar_pdf:
-                pdf_bytes = try_convert_pdf(docx_bytes)
-                if pdf_bytes:
-                    zf.writestr(f"{filename_base}.pdf", pdf_bytes)
+        filename_base = (
+            sanitize_filename(f"{matricula} - {nome}")
+            if matricula
+            else sanitize_filename(nome)
+        )
 
-            gerados += 1
-            progress.progress((i + 1) / total, text=f"Gerando documentos... ({i+1}/{total})")
+        zf.writestr(f"{filename_base}.docx", docx_bytes)
 
-    progress.empty()
-    status_area.success(f"✅ {gerados} de {total} documentos gerados com sucesso.")
+        if gerar_pdf:
+            pdf_bytes = try_convert_pdf(docx_bytes)
+            if pdf_bytes:
+                zf.writestr(f"{filename_base}.pdf", pdf_bytes)
+
+        gerados += 1
+        progress.progress(
+            (i + 1) / total,
+            text=f"Gerando documentos... ({i+1}/{total})"
+        )
+
+progress.empty()
+status_area.success(f"✅ {gerados} de {total} documentos gerados com sucesso.")
 
     if faltando_dados:
         with st.expander(f"⚠️ {len(faltando_dados)} colaborador(es) com dados faltando ou erro"):
