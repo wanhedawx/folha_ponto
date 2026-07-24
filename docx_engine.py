@@ -12,10 +12,20 @@ WEEKDAY_PT = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM']  # Monday=0
 MONTH_PT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
 
 MERGE_FIELDS = [
-    'NOME_EMPRESA', 'DESCRIÇÃO_DO_LOCAL', 'ENDEREÇO', 'NUMERO', 'CIDADE',
-    'BAIRRO', 'MATRICULA', 'NOME', 'ADMISSAO', 'FUNÇÃO', 'HORARIO'
+    NOME_EMPRESA',
+    'DESCRIÇÃO_DO_LOCAL',
+    'ENDEREÇO',
+    'NUMERO',
+    'CIDADE',
+    'BAIRRO',
+    'MATRICULA',
+    'NOME',
+    'ADMISSAO',
+    'FUNÇÃO',
+    'HORARIO',
+    'PERIODO',
+    'ANO'
 ]
-
 
 def _xml_escape(text: str) -> str:
     return (
