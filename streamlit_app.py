@@ -43,29 +43,6 @@ def sanitize_filename(name: str) -> str:
     return name[:150]
 
 
-def try_convert_pdf(docx_bytes: bytes) -> bytes | None:
-    """Tenta converter para PDF via LibreOffice, se disponível no ambiente."""
-    import subprocess
-    import tempfile
-    import os
-    try:
-        with tempfile.TemporaryDirectory() as tmp:
-            docx_path = os.path.join(tmp, "doc.docx")
-            with open(docx_path, "wb") as f:
-                f.write(docx_bytes)
-            result = subprocess.run(
-                ["soffice", "--headless", "--convert-to", "pdf", "--outdir", tmp, docx_path],
-                capture_output=True, timeout=60,
-            )
-            pdf_path = os.path.join(tmp, "doc.pdf")
-            if result.returncode == 0 and os.path.exists(pdf_path):
-                with open(pdf_path, "rb") as f:
-                    return f.read()
-    except Exception:
-        return None
-    return None
-
-
 st.title("Gerar Folha de Ponto")
 
 st.subheader("1. Planilha de colaboradores (.xlsx)")
@@ -73,7 +50,7 @@ xlsx_file = st.file_uploader("Envie a planilha base", type=["xlsx"])
 
 st.subheader("2. Base Word (.docx)")
 docx_file = st.file_uploader(
-    "Envie a planilha base",
+    "Envie o template base",
     type=["docx"],
 )
 
@@ -118,83 +95,78 @@ if gerar:
     total = len(df)
 
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-    for i, row in df.iterrows():
+        for i, row in df.iterrows():
 
-        values = {}
-        campos_vazios = []
+            values = {}
+            campos_vazios = []
 
-        for col, field in COLUMN_TO_FIELD.items():
-            raw = row.get(col, "")
+            for col, field in COLUMN_TO_FIELD.items():
+                raw = row.get(col, "")
 
-            if pd.isna(raw) or str(raw).strip() == "":
-                campos_vazios.append(col)
-                raw = ""
+                if pd.isna(raw) or str(raw).strip() == "":
+                    campos_vazios.append(col)
+                    raw = ""
 
-            if field == "ADMISSAO" and raw != "":
-                try:
-                    raw = pd.to_datetime(raw).strftime("%d/%m/%Y")
-                except Exception:
-                    raw = str(raw)
+                if field == "ADMISSAO" and raw != "":
+                    try:
+                        raw = pd.to_datetime(raw).strftime("%d/%m/%Y")
+                    except Exception:
+                        raw = str(raw)
 
-            values[field] = str(raw)
+                values[field] = str(raw)
 
-        MESES = {
-            1: "JAN",
-            2: "FEV",
-            3: "MAR",
-            4: "ABR",
-            5: "MAI",
-            6: "JUN",
-            7: "JUL",
-            8: "AGO",
-            9: "SET",
-            10: "OUT",
-            11: "NOV",
-            12: "DEZ",
-        }
+            MESES = {
+                1: "JAN",
+                2: "FEV",
+                3: "MAR",
+                4: "ABR",
+                5: "MAI",
+                6: "JUN",
+                7: "JUL",
+                8: "AGO",
+                9: "SET",
+                10: "OUT",
+                11: "NOV",
+                12: "DEZ",
+            }
 
-        values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
-        values["ANO"] = str(end_date.year)
+            values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
+            values["ANO"] = str(end_date.year)
 
-        nome = values.get("NOME", f"colaborador_{i}").strip() or f"colaborador_{i}"
-        matricula = values.get("MATRICULA", "").strip()
+            nome = values.get("NOME", f"colaborador_{i}").strip() or f"colaborador_{i}"
+            matricula = values.get("MATRICULA", "").strip()
 
-        if campos_vazios:
-            faltando_dados.append((nome or f"linha {i+2}", campos_vazios))
+            if campos_vazios:
+                faltando_dados.append((nome or f"linha {i+2}", campos_vazios))
 
-        try:
-            docx_bytes = eng.build_docx(
-                base_content,
-                others,
-                values,
-                start_date,
-                end_date
+            try:
+                docx_bytes = eng.build_docx(
+                    base_content,
+                    others,
+                    values,
+                    start_date,
+                    end_date
+                )
+            except Exception as e:
+                faltando_dados.append((nome, [f"ERRO ao gerar: {e}"]))
+                continue
+
+            filename_base = (
+                sanitize_filename(f"{matricula} - {nome}")
+                if matricula
+                else sanitize_filename(nome)
             )
-        except Exception as e:
-            faltando_dados.append((nome, [f"ERRO ao gerar: {e}"]))
-            continue
 
-        filename_base = (
-            sanitize_filename(f"{matricula} - {nome}")
-            if matricula
-            else sanitize_filename(nome)
-        )
+            zf.writestr(f"{filename_base}.docx", docx_bytes)
 
-        zf.writestr(f"{filename_base}.docx", docx_bytes)
+            gerados += 1
+            progress.progress(
+                (i + 1) / total,
+                text=f"Gerando documentos... ({i+1}/{total})"
+            )
 
-        if gerar_pdf:
-            pdf_bytes = try_convert_pdf(docx_bytes)
-            if pdf_bytes:
-                zf.writestr(f"{filename_base}.pdf", pdf_bytes)
-
-        gerados += 1
-        progress.progress(
-            (i + 1) / total,
-            text=f"Gerando documentos... ({i+1}/{total})"
-        )
-
-progress.empty()
-status_area.success(f"✅ {gerados} de {total} documentos gerados com sucesso.")
+    progress.empty()
+    status_area.success(f"✅ {gerados} de {total} documentos gerados com sucesso.")
 
     if faltando_dados:
         with st.expander(f"⚠️ {len(faltando_dados)} colaborador(es) com dados faltando ou erro"):
