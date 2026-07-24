@@ -62,8 +62,11 @@ st.title("Gerar Folha de Ponto")
 
 st.subheader("1. Planilha de colaboradores")
 
-st.subheader("2. Template Word")
-docx_file = st.file_uploader()
+t.subheader("2. Template Word (.docx)")
+docx_file = st.file_uploader(
+    "Envie arquivo base)",
+    type=["docx"],
+)
 
 st.subheader("3. Período trabalhado")
 col1, col2 = st.columns(2)
