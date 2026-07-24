@@ -149,8 +149,8 @@ if gerar:
     9: "SET",
     10: "OUT",
     11: "NOV",
-    12: "DEZ"
-}
+    12: "DEZ"}
+    
     values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
     values["ANO"] = str(end_date.year) 
 
