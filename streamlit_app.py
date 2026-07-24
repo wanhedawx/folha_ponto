@@ -119,6 +119,7 @@ if gerar:
 
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
     for i, row in df.iterrows():
+
         values = {}
         campos_vazios = []
 
@@ -149,7 +150,7 @@ if gerar:
             9: "SET",
             10: "OUT",
             11: "NOV",
-            12: "DEZ"
+            12: "DEZ",
         }
 
         values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
