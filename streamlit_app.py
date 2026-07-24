@@ -1,11 +1,4 @@
-"""
-Gerador de Folhas de Ponto — mala direta em massa a partir de planilha Excel
-+ template Word, com seleção de período e download em ZIP.
 
-Como rodar localmente:
-    pip install streamlit pandas openpyxl
-    streamlit run streamlit_app.py
-"""
 import io
 import re
 import zipfile
@@ -16,7 +9,7 @@ import streamlit as st
 
 import docx_engine as eng
 
-st.set_page_config(page_title="Gerador de Folha de Ponto", page_icon="🗓️", layout="centered")
+st.set_page_config(page_title="Gerar Folha de Ponto",layout="centered")
 
 REQUIRED_COLUMNS = [
     "Nome (Empresa)", "DESCRIÇÃO DO LOCAL", "ENDEREÇO", "NUMERO", "CIDADE",
@@ -44,7 +37,6 @@ def sanitize_filename(name: str) -> str:
 
 
 def try_convert_pdf(docx_bytes: bytes) -> bytes | None:
-    """Tenta converter para PDF via LibreOffice, se disponível no ambiente."""
     import subprocess
     import tempfile
     import os
@@ -66,15 +58,12 @@ def try_convert_pdf(docx_bytes: bytes) -> bytes | None:
     return None
 
 
-st.title("🗓️ Gerador de Folha de Ponto")
-st.caption("Importa a planilha, escolhe o período, gera um .docx por colaborador e baixa tudo em ZIP.")
+st.title("Gerar Folha de Ponto")
 
-st.subheader("1. Planilha de colaboradores (.xlsx)")
-xlsx_file = st.file_uploader("Envie a PLANILHA", type=["xlsx"])
+st.subheader("1. Planilha de colaboradores")
 
-st.subheader("2. Template Word (.docx)")
+st.subheader("2. Template Word")
 docx_file = st.file_uploader(
-    "Envie o template FOLHA_DE_PONTO_-_BASE.docx (com os campos «NOME», «MATRICULA» etc.)",
     type=["docx"],
 )
 
@@ -88,7 +77,7 @@ with col2:
 
 st.subheader("4. Opções")
 gerar_pdf = st.checkbox(
-    "Também converter para PDF (requer LibreOffice instalado no servidor — pode não estar disponível no Streamlit Cloud)",
+    "Também converter para PDF",
     value=False,
 )
 
