@@ -151,11 +151,11 @@ MESES = {
     11: "NOV",
     12: "DEZ"
 }
-            values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
-            values["ANO"] = str(end_date.year) 
+values["PERIODO"] = f"{MESES[start_date.month]}/{MESES[end_date.month]}"
+values["ANO"] = str(end_date.year) 
 
-            nome = values.get("NOME", f"colaborador_{i}").strip() or f"colaborador_{i}"
-            matricula = values.get("MATRICULA", "").strip()
+nome = values.get("NOME", f"colaborador_{i}").strip() or f"colaborador_{i}"
+matricula = values.get("MATRICULA", "").strip()
 
             if campos_vazios:
                 faltando_dados.append((nome or f"linha {i+2}", campos_vazios))
